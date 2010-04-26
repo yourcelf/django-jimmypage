@@ -92,13 +92,16 @@ class cache_page(object):
             cached = cache.get(key)
             if cached is not None:
                 debug("serving from cache")
-                return HttpResponse(cached)
+                res = HttpResponse(cached)
+                res["ETag"] = key
+                return res
 
             debug("generating!")
             response = self.f(request, *args, **kwargs)
             if response_is_cacheable(response):
                 debug("storing!")
                 cache_response(key, response, self.time)
+            response["ETag"] = key
             return response 
         debug("nocache: generating!")
         return self.f(request, *args, **kwargs)

@@ -40,11 +40,11 @@ This is the first, as yet largely untested alpha release.  Some notes:
 
 Install using pip::
 
-    ``pip install -e git://github.com/yourcelf/django-jimmypage.git#egg=django-jimmypage``
+    pip install -e git://github.com/yourcelf/django-jimmypage.git#egg=django-jimmypage
 
 or clone the git archive and use setup.py::
 
-    ``python setup.py install``
+    python setup.py install
 
 Usage
 -----
