@@ -37,7 +37,7 @@ This is the first, as yet largely untested alpha release.  Some notes:
   stage, Jimmy Page works best with sites using vanilla ORM calls.
 
 Install using pip::
-    ``pip install -e git://github.com/yourcelf/django-jimmypage.git``
+    ``pip install -e git://github.com/yourcelf/django-jimmypage.git#egg=django-jimmypage``
 or setup.py::
     ``python setup.py install``
 
