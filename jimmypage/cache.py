@@ -88,7 +88,7 @@ class cache_page(object):
         debug("starting")
         if request_is_cacheable(request):
             key = get_cache_key(request)
-            debug("cacheable:", key)
+            debug("Retrievable.")
             cached = cache.get(key)
             if cached is not None:
                 debug("serving from cache")
@@ -98,29 +98,35 @@ class cache_page(object):
 
             debug("generating!")
             response = self.f(request, *args, **kwargs)
-            if response_is_cacheable(response):
+            import pprint
+            pprint.pprint(request.META)
+            if response_is_cacheable(request, response):
                 debug("storing!")
                 cache_response(key, response, self.time)
+            else:
+                debug("Not storable.")
             response["ETag"] = key
             return response 
-        debug("nocache: generating!")
+        debug("Not retrievable.")
+        debug("generating!")
         return self.f(request, *args, **kwargs)
 
 def get_cache_key(request):
-    id = "" 
+    user_id = "" 
     try:
         if request.user.is_authenticated():
-            id = str(request.user.id)
+            user_id = str(request.user.id)
     except AttributeError: # e.g. if auth is not installed
         pass
 
     key = "/".join((
         CACHE_PREFIX,
-        str(cache.get(GLOBAL_GENERATION, 1)),
+        str(cache.get(GLOBAL_GENERATION)),
         iri_to_uri(request.path),
         translation.get_language(),
-        id,
+        user_id,
     ))
+    debug(key)
     return md5(key).hexdigest()
 
 def cache_response(key, response, time):
@@ -130,9 +136,11 @@ def request_is_cacheable(request):
     return request.method == "GET" and \
             len(messages.get_messages(request)) == 0
 
-def response_is_cacheable(response):
+def response_is_cacheable(request, response):
     return response.status_code == 200 and \
-        response.get('Pragma', None) != "no-cache"
+        response.get('Pragma', None) != "no-cache" and \
+        response.get('Vary', None) != "Cookie" and \
+        not request.META.get("CSRF_COOKIE_USED", None)
 
 if DEBUG_CACHE:
     def debug(*args):
@@ -140,3 +148,5 @@ if DEBUG_CACHE:
 else:
     def debug(*args):
         pass
+
+clear_cache()
