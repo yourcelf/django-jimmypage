@@ -98,8 +98,6 @@ class cache_page(object):
 
             debug("generating!")
             response = self.f(request, *args, **kwargs)
-            import pprint
-            pprint.pprint(request.META)
             if response_is_cacheable(request, response):
                 debug("storing!")
                 cache_response(key, response, self.time)
