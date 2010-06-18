@@ -100,7 +100,7 @@ class cache_page(object):
             response = self.f(request, *args, **kwargs)
             if response_is_cacheable(request, response):
                 debug("storing!")
-                cache_response(key, response, self.time)
+                cache.set(key, response.content, self.time)
             else:
                 debug("Not storable.")
             response["ETag"] = key
@@ -127,9 +127,6 @@ def get_cache_key(request):
     debug(key)
     return md5(key).hexdigest()
 
-def cache_response(key, response, time):
-    cache.set(key, response.content, CACHE_SECONDS)
-        
 def request_is_cacheable(request):
     return request.method == "GET" and \
             len(messages.get_messages(request)) == 0
