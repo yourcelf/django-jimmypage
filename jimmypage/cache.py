@@ -1,3 +1,4 @@
+import urllib
 try:
     import hashlib
     md5 = hashlib.md5
@@ -121,6 +122,7 @@ def get_cache_key(request):
         CACHE_PREFIX,
         str(cache.get(GLOBAL_GENERATION)),
         iri_to_uri(request.path),
+        urllib.urlencode(request.GET),
         translation.get_language(),
         user_id,
     ))
