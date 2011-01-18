@@ -18,6 +18,7 @@ __all__ = ('cache_page', 'clear_cache')
 
 CACHE_PREFIX = getattr(settings, 'JIMMY_PAGE_CACHE_PREFIX', 'jp')
 CACHE_SECONDS = getattr(settings, 'JIMMY_PAGE_CACHE_SECONDS', 0)
+DISABLED = getattr(settings, 'JIMMY_PAGE_DISABLED', False)
 EXPIRATION_WHITELIST = set(getattr(settings, 
     'JIMMY_PAGE_EXPIRATION_WHITELIST', 
     [
@@ -131,11 +132,13 @@ def cache_response(key, response, time):
     cache.set(key, response.content, CACHE_SECONDS)
         
 def request_is_cacheable(request):
-    return request.method == "GET" and \
+    return (not DISABLED) and \
+            request.method == "GET" and \
             len(messages.get_messages(request)) == 0
 
 def response_is_cacheable(request, response):
-    return response.status_code == 200 and \
+    return (not DISABLED) and \
+        response.status_code == 200 and \
         response.get('Pragma', None) != "no-cache" and \
         response.get('Vary', None) != "Cookie" and \
         not request.META.get("CSRF_COOKIE_USED", None)
