@@ -1,3 +1,4 @@
+import urllib
 try:
     import hashlib
     md5 = hashlib.md5
@@ -101,7 +102,7 @@ class cache_page(object):
             response = self.f(request, *args, **kwargs)
             if response_is_cacheable(request, response):
                 debug("storing!")
-                cache_response(key, response, self.time)
+                cache.set(key, response.content, self.time)
             else:
                 debug("Not storable.")
             response["ETag"] = key
@@ -122,15 +123,13 @@ def get_cache_key(request):
         CACHE_PREFIX,
         str(cache.get(GLOBAL_GENERATION)),
         iri_to_uri(request.path),
+        urllib.urlencode(request.GET),
         translation.get_language(),
         user_id,
     ))
     debug(key)
     return md5(key).hexdigest()
 
-def cache_response(key, response, time):
-    cache.set(key, response.content, CACHE_SECONDS)
-        
 def request_is_cacheable(request):
     return (not DISABLED) and \
             request.method == "GET" and \
