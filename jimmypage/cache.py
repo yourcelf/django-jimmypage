@@ -149,4 +149,3 @@ else:
     def debug(*args):
         pass
 
-clear_cache()
