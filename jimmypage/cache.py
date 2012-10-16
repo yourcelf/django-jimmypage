@@ -103,9 +103,9 @@ class cache_page(object):
             if response_is_cacheable(request, response):
                 debug("storing!")
                 cache.set(key, response.content, self.time)
+                response["ETag"] = key
             else:
                 debug("Not storable.")
-            response["ETag"] = key
             return response 
         debug("Not retrievable.")
         debug("generating!")
