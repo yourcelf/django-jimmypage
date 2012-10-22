@@ -118,15 +118,22 @@ def get_cache_key(request):
             user_id = str(request.user.id)
     except AttributeError: # e.g. if auth is not installed
         pass
-
-    key = "/".join((
+    
+    key_parts = [
         CACHE_PREFIX,
         str(cache.get(GLOBAL_GENERATION)),
         iri_to_uri(request.path),
         urllib.urlencode(request.GET),
         translation.get_language(),
         user_id,
-    ))
+    ]
+    suffix_function = getattr(settings, 'JIMMY_PAGE_SUFFIX_FUNCTION', None)
+    if suffix_function and callable(suffix_function):
+        part = suffix_function(request)
+        if part:
+            key_parts.append(part)
+    key = "/".join(key_parts)
+
     debug(key)
     return md5(key).hexdigest()
 
