@@ -10,6 +10,7 @@ except ImportError:
 from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models.signals import post_save, pre_delete
 from django.http import HttpResponse
 from django.utils import translation
@@ -88,6 +89,8 @@ class cache_page(object):
 
     def decorated(self, request, *args, **kwargs):
         debug("starting")
+        if not 'johnny' in str(cache.__class__):
+            raise ImproperlyConfigured('Not using johnny cache backend')
         if request_is_cacheable(request):
             key = get_cache_key(request)
             debug("Retrievable.")
