@@ -1,4 +1,3 @@
-import urllib
 try:
     import hashlib
     md5 = hashlib.md5
@@ -15,6 +14,7 @@ from django.db.models.signals import post_save, pre_delete
 from django.http import HttpResponse
 from django.utils import translation
 from django.utils.encoding import iri_to_uri
+from django.utils.http import urlencode
 
 __all__ = ('cache_page', 'clear_cache')
 
@@ -126,7 +126,7 @@ def get_cache_key(request):
         CACHE_PREFIX,
         str(cache.get(GLOBAL_GENERATION)),
         iri_to_uri(request.path),
-        urllib.urlencode(request.GET),
+        urlencode(request.GET),
         translation.get_language(),
         user_id,
     ]
