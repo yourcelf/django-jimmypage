@@ -89,7 +89,10 @@ class cache_page(object):
 
     def decorated(self, request, *args, **kwargs):
         debug("starting")
-        if not 'johnny' in str(cache.__class__):
+        try:
+            if not settings.CACHES['default']['JOHNNY_CACHE']:
+                raise KeyError
+        except KeyError:
             raise ImproperlyConfigured('Not using johnny cache backend')
         if request_is_cacheable(request):
             key = get_cache_key(request)
