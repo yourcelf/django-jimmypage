@@ -1,4 +1,3 @@
-import urllib
 try:
     import hashlib
     md5 = hashlib.md5
@@ -10,10 +9,12 @@ except ImportError:
 from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models.signals import post_save, pre_delete
 from django.http import HttpResponse
 from django.utils import translation
 from django.utils.encoding import iri_to_uri
+from django.utils.http import urlencode
 
 __all__ = ('cache_page', 'clear_cache')
 
@@ -88,6 +89,11 @@ class cache_page(object):
 
     def decorated(self, request, *args, **kwargs):
         debug("starting")
+        try:
+            if not settings.CACHES['default']['JOHNNY_CACHE']:
+                raise KeyError
+        except KeyError:
+            raise ImproperlyConfigured('Not using johnny cache backend')
         if request_is_cacheable(request):
             key = get_cache_key(request)
             debug("Retrievable.")
@@ -118,15 +124,22 @@ def get_cache_key(request):
             user_id = str(request.user.id)
     except AttributeError: # e.g. if auth is not installed
         pass
-
-    key = "/".join((
+    
+    key_parts = [
         CACHE_PREFIX,
         str(cache.get(GLOBAL_GENERATION)),
         iri_to_uri(request.path),
-        urllib.urlencode(request.GET),
+        urlencode(request.GET),
         translation.get_language(),
         user_id,
-    ))
+    ]
+    suffix_function = getattr(settings, 'JIMMY_PAGE_SUFFIX_FUNCTION', None)
+    if suffix_function and callable(suffix_function):
+        part = suffix_function(request)
+        if part:
+            key_parts.append(part)
+    key = "/".join(key_parts)
+
     debug(key)
     return md5(key).hexdigest()
 
