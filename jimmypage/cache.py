@@ -141,7 +141,7 @@ def get_cache_key(request):
     key = "/".join(key_parts)
 
     debug(key)
-    return md5(key).hexdigest()
+    return md5(key.encode('latin-1')).hexdigest()
 
 def request_is_cacheable(request):
     return (not DISABLED) and \
@@ -157,7 +157,7 @@ def response_is_cacheable(request, response):
 
 if DEBUG_CACHE:
     def debug(*args):
-        print "JIMMYPAGE: " + " ".join([str(a) for a in args])
+        print("JIMMYPAGE: " + " ".join([str(a) for a in args]))
 else:
     def debug(*args):
         pass
